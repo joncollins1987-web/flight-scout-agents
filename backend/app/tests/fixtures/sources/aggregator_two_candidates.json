@@ -1,0 +1,151 @@
+[
+  {
+    "candidate_id": "A2-DIRECT-AA-DUP",
+    "source": "aggregator_two",
+    "booking_url": "https://example.com/a2/direct-aa",
+    "origin_airport": "JFK",
+    "destination_airport": "LAX",
+    "depart_date": "2026-05-10",
+    "return_date": "2026-05-17",
+    "segments_outbound": [
+      {
+        "carrier": "AA",
+        "flight_number": "AA100",
+        "origin_airport": "JFK",
+        "destination_airport": "LAX",
+        "departure_time_utc": "2026-05-10T12:00:00+00:00",
+        "arrival_time_utc": "2026-05-10T18:00:00+00:00",
+        "duration_minutes": 360,
+        "origin_terminal": "8",
+        "destination_terminal": "4"
+      }
+    ],
+    "segments_inbound": [
+      {
+        "carrier": "AA",
+        "flight_number": "AA101",
+        "origin_airport": "LAX",
+        "destination_airport": "JFK",
+        "departure_time_utc": "2026-05-17T20:00:00+00:00",
+        "arrival_time_utc": "2026-05-18T02:00:00+00:00",
+        "duration_minutes": 360,
+        "origin_terminal": "4",
+        "destination_terminal": "8"
+      }
+    ],
+    "base_fare_usd": 225.0,
+    "taxes_fees_usd": 75.0,
+    "headline_price_usd": 245.0,
+    "fare_brand": "Basic",
+    "refundable": false,
+    "cabin": "economy",
+    "bags_included": 0,
+    "seat_selection_included": false,
+    "self_transfer": false,
+    "parsing_confidence": 0.94,
+    "raw_notes": ["duplicate route"]
+  },
+  {
+    "candidate_id": "A2-REDEYE-B6",
+    "source": "aggregator_two",
+    "booking_url": "https://example.com/a2/redeye-b6",
+    "origin_airport": "JFK",
+    "destination_airport": "LAX",
+    "depart_date": "2026-05-10",
+    "return_date": "2026-05-17",
+    "segments_outbound": [
+      {
+        "carrier": "B6",
+        "flight_number": "B6400",
+        "origin_airport": "JFK",
+        "destination_airport": "LAX",
+        "departure_time_utc": "2026-05-10T04:20:00+00:00",
+        "arrival_time_utc": "2026-05-10T10:10:00+00:00",
+        "duration_minutes": 350,
+        "origin_terminal": "5",
+        "destination_terminal": "5"
+      }
+    ],
+    "segments_inbound": [
+      {
+        "carrier": "B6",
+        "flight_number": "B6401",
+        "origin_airport": "LAX",
+        "destination_airport": "JFK",
+        "departure_time_utc": "2026-05-17T06:30:00+00:00",
+        "arrival_time_utc": "2026-05-17T12:20:00+00:00",
+        "duration_minutes": 350,
+        "origin_terminal": "5",
+        "destination_terminal": "5"
+      }
+    ],
+    "base_fare_usd": 205.0,
+    "taxes_fees_usd": 80.0,
+    "headline_price_usd": 229.0,
+    "fare_brand": "Blue Basic",
+    "refundable": false,
+    "cabin": "economy",
+    "bags_included": 0,
+    "seat_selection_included": false,
+    "self_transfer": false,
+    "parsing_confidence": 0.89,
+    "raw_notes": ["red-eye"]
+  },
+  {
+    "candidate_id": "A2-SELFTRANSFER",
+    "source": "aggregator_two",
+    "booking_url": "https://example.com/a2/selftransfer",
+    "origin_airport": "EWR",
+    "destination_airport": "LAX",
+    "depart_date": "2026-05-11",
+    "return_date": "2026-05-18",
+    "segments_outbound": [
+      {
+        "carrier": "F9",
+        "flight_number": "F9500",
+        "origin_airport": "EWR",
+        "destination_airport": "LAS",
+        "departure_time_utc": "2026-05-11T11:00:00+00:00",
+        "arrival_time_utc": "2026-05-11T16:20:00+00:00",
+        "duration_minutes": 320,
+        "origin_terminal": "A",
+        "destination_terminal": "1"
+      },
+      {
+        "carrier": "NK",
+        "flight_number": "NK900",
+        "origin_airport": "LAS",
+        "destination_airport": "LAX",
+        "departure_time_utc": "2026-05-11T17:10:00+00:00",
+        "arrival_time_utc": "2026-05-11T18:20:00+00:00",
+        "duration_minutes": 70,
+        "origin_terminal": "3",
+        "destination_terminal": "6"
+      }
+    ],
+    "segments_inbound": [
+      {
+        "carrier": "NK",
+        "flight_number": "NK901",
+        "origin_airport": "LAX",
+        "destination_airport": "EWR",
+        "departure_time_utc": "2026-05-18T13:00:00+00:00",
+        "arrival_time_utc": "2026-05-18T19:00:00+00:00",
+        "duration_minutes": 360,
+        "origin_terminal": "6",
+        "destination_terminal": "A"
+      }
+    ],
+    "base_fare_usd": 170.0,
+    "taxes_fees_usd": 68.0,
+    "headline_price_usd": 189.0,
+    "fare_brand": "Economy",
+    "refundable": false,
+    "cabin": "economy",
+    "bags_included": 0,
+    "seat_selection_included": false,
+    "self_transfer": true,
+    "parsing_confidence": 0.86,
+    "raw_notes": ["self transfer"]
+  }
+]

@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-top: #daf0ff;
+  --bg-mid: #eef6ff;
+  --bg-bottom: #f9fcff;
+  --ink: #142031;
+  --muted-ink: #4c5b70;
+  --surface: #ffffff;
+  --surface-soft: #f7fbff;
+  --surface-emphasis: #eaf5ff;
+  --border: #d7e4f2;
+  --verified-bg: #def7ec;
+  --verified-ink: #166534;
+  --warning-bg: #fff4df;
+  --warning-ink: #b45309;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(122, 209, 255, 0.45), transparent 42%),
+    radial-gradient(circle at 85% 0%, rgba(111, 154, 255, 0.18), transparent 38%),
+    linear-gradient(180deg, var(--bg-top), var(--bg-mid) 52%, var(--bg-bottom));
+  min-height: 100vh;
+}
+
+.eyebrow {
+  @apply text-xs uppercase tracking-[0.2em] text-slate-500;
+}
+
+.surface-card {
+  @apply rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_14px_32px_rgba(15,28,45,0.09)] backdrop-blur;
+}
+
+.emphasis-card {
+  @apply rounded-2xl border border-sky-200 bg-sky-50/90 shadow-[0_12px_26px_rgba(27,86,160,0.15)];
+}
+
+.alert-card {
+  @apply rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800;
+}
+
+.wizard-shell {
+  @apply space-y-4;
+}
+
+.input-group {
+  @apply flex flex-col gap-1 text-sm;
+}
+
+.input-group > span {
+  @apply font-semibold text-slate-700;
+}
+
+.input-group input,
+.input-group select {
+  @apply rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100;
+}
+
+.input-group small {
+  @apply text-xs text-slate-500;
+}
+
+.chip-option {
+  @apply inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700;
+}
+
+.chip-option input {
+  @apply accent-sky-600;
+}
+
+.date-grid {
+  @apply grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3;
+}
+
+.date-chip {
+  @apply inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700;
+}
+
+.date-chip input {
+  @apply accent-sky-600;
+}
+
+.month-card {
+  @apply rounded-2xl border border-slate-200 bg-white p-3;
+}
+
+.month-label {
+  @apply text-sm font-semibold text-slate-700;
+}
+
+.month-days {
+  @apply mt-2 grid grid-cols-3 gap-2 md:grid-cols-4 lg:grid-cols-5;
+}
+
+.month-toolbar {
+  @apply flex flex-wrap items-end justify-between gap-2;
+}
+
+.month-select-group {
+  @apply min-w-[220px];
+}
+
+.day-chip {
+  @apply inline-flex items-center justify-center rounded-lg border px-2 py-1 text-xs font-medium transition;
+}
+
+.day-chip input {
+  @apply sr-only;
+}
+
+.day-chip-selected {
+  @apply border-sky-400 bg-sky-100 text-sky-800;
+}
+
+.day-chip-unselected {
+  @apply border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+}
+
+.button-primary {
+  @apply rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.button-secondary {
+  @apply rounded-xl border border-sky-300 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.button-ghost {
+  @apply rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+.chip-muted {
+  @apply inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600;
+}
+
+.chip-verified {
+  @apply inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs text-emerald-700;
+}
+
+.chip-warning {
+  @apply inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs text-amber-700;
+}
+
+.tab-button {
+  @apply flex flex-col rounded-xl border px-3 py-2 text-left transition;
+}
+
+.tab-button-active {
+  @apply border-sky-300 bg-sky-50;
+}
+
+.tab-button-idle {
+  @apply border-slate-200 bg-white hover:bg-slate-50;
+}
+
+.itinerary-card {
+  @apply rounded-2xl border p-4 shadow-[0_10px_20px_rgba(12,31,60,0.08)] transition-all duration-300;
+}
+
+.itinerary-card-surface {
+  @apply border-slate-200 bg-white;
+}
+
+.itinerary-card-emphasis {
+  @apply border-sky-200 bg-gradient-to-b from-white to-sky-50;
+}
+
+.metric-label {
+  @apply text-xs uppercase tracking-[0.1em] text-slate-500;
+}
+
+.metric-value {
+  @apply mt-1 text-xl font-semibold text-ink;
+}
+
+.metric-sub {
+  @apply mt-1 text-xs text-slate-500;
+}
+
+.timeline-card {
+  @apply rounded-xl border border-slate-200 bg-white p-2;
+}
+
+.timeline-title {
+  @apply text-xs uppercase tracking-[0.1em] text-slate-500;
+}
+
+.timeline-main {
+  @apply mt-1 text-sm font-semibold text-slate-800;
+}
+
+.timeline-sub {
+  @apply mt-1 text-xs text-slate-500;
+}
+
+.compare-tray {
+  @apply fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-300 bg-white/95 p-3 shadow-[0_16px_36px_rgba(15,28,45,0.2)] backdrop-blur;
+}
+
+.animate-fade-in {
+  animation: fadeIn 260ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "itinerary_id": "fixture-id-1",
+    "verified_total_price_usd": 310.0,
+    "checked_url": "https://example.com/checkout",
+    "price_text_snapshot": "Total: $310.00",
+    "fare_brand_text": "Main Cabin",
+    "baggage_rules_text": "1 carry-on included, checked bag extra.",
+    "seat_fee_text": "Seat fee from $20.",
+    "change_cancel_text": "Non-refundable; change fee waived with fare difference.",
+    "screenshot_path": null
+  }
+]

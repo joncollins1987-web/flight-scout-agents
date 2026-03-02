@@ -1,0 +1,14 @@
+{
+  "required_top_level": [
+    "run_id",
+    "generated_at",
+    "status",
+    "cache_hit",
+    "warnings",
+    "cheapest",
+    "nonstop",
+    "strategic",
+    "compare_pool",
+    "metadata"
+  ]
+}

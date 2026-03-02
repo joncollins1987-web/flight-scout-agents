@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: flight-scout-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: |
+      pip install --upgrade pip
+      pip install .
+      python -m playwright install chromium
+    startCommand: gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4.1-mini
+      - key: DATABASE_URL
+        value: sqlite:///./data/flight_scout.db
+      - key: CACHE_TTL_MINUTES
+        value: "45"
+      - key: VERIFY_TOP_N_PER_TAB
+        value: "5"
+      - key: VERIFICATION_STALE_MINUTES
+        value: "30"
+      - key: SOURCE_AGGREGATOR_ONE_ENABLED
+        value: "true"
+      - key: SOURCE_AGGREGATOR_TWO_ENABLED
+        value: "true"
+      - key: ENABLE_LIVE_SOURCES
+        value: "false"
+      - key: PLAYWRIGHT_HEADLESS
+        value: "true"
+      - key: PLAYWRIGHT_TIMEOUT_MS
+        value: "30000"
+      - key: LOG_LEVEL
+        value: INFO

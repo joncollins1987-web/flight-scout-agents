@@ -1,0 +1,31 @@
+{
+  "origin_airports": ["JFK", "EWR", "LGA"],
+  "include_nearby_airports": false,
+  "nearby_airports": ["HPN", "ISP", "PHL"],
+  "destination_query": "LAX",
+  "departure_dates": ["2026-05-10", "2026-05-11"],
+  "return_dates": ["2026-05-17", "2026-05-18"],
+  "passengers_adults": 1,
+  "cabin": "economy",
+  "currency": "USD",
+  "carry_on_count": 1,
+  "checked_bag_count": 1,
+  "basic_economy_allowed": true,
+  "refundable_required": false,
+  "allow_stopovers": true,
+  "prefer_nonstop": true,
+  "stopover_plan_enabled": true,
+  "stopover_budget_usd": 75.0,
+  "stopover_effort": "medium",
+  "stopover_leave_airport": true,
+  "avoid_red_eyes": true,
+  "avoid_tight_connections": true,
+  "preferred_airlines": [],
+  "blocked_airlines": [],
+  "dry_run": true,
+  "max_verify_per_tab": 5,
+  "source_flags": {
+    "aggregator_one": true,
+    "aggregator_two": true
+  }
+}
