@@ -47,6 +47,11 @@ async def verify_itineraries(
         results = [_verify_from_fixture(itinerary, fixture.get(itinerary.itinerary_id), material_change_threshold) for itinerary in itineraries]
         return VerificationBatch(verified=results)
 
+    if not settings.enable_live_sources:
+        # In non-live mode we avoid expensive browser checks and emit fast synthetic verification.
+        results = [_verify_from_fixture(itinerary, None, material_change_threshold) for itinerary in itineraries]
+        return VerificationBatch(verified=results)
+
     verified: list[VerifiedItinerary] = []
     for itinerary in itineraries:
         try:
