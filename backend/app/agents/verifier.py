@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.artifact_store import ArtifactStore
 from app.core.browser_pool import browser_pool
-from app.core.booking_links import ensure_actionable_booking_url
+from app.core.booking_links import build_google_flights_search_url, ensure_actionable_booking_url
 from app.core.config import settings
 from app.schemas.itinerary import NormalizedItinerary
 from app.schemas.request import SearchRequest
@@ -20,6 +20,13 @@ class VerificationBatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     verified: list[VerifiedItinerary] = Field(default_factory=list)
+
+
+def _extract_price_usd(page_html: str) -> float | None:
+    price_match = re.search(r"\$\s?([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{2})?)", page_html)
+    if not price_match:
+        return None
+    return float(price_match.group(1).replace(",", ""))
 
 
 def _fixture_map() -> dict[str, dict]:
@@ -153,11 +160,27 @@ async def _verify_live(
     async with browser_pool.page() as page:
         await page.goto(checked_url, timeout=settings.playwright_timeout_ms)
         content = await page.content()
+        parsed_total = _extract_price_usd(content)
+
+        if parsed_total is None:
+            fallback_checked_url = build_google_flights_search_url(
+                origin=itinerary.origin_airport,
+                destination=itinerary.destination_airport,
+                depart_date=itinerary.depart_date,
+                return_date=itinerary.return_date,
+                adults=1,
+                cabin="economy",
+            )
+            if fallback_checked_url != checked_url:
+                checked_url = fallback_checked_url
+                await page.goto(checked_url, timeout=settings.playwright_timeout_ms)
+                content = await page.content()
+                parsed_total = _extract_price_usd(content)
+
         screenshot_path = artifact_store.evidence_path(f"{itinerary.itinerary_id}.png")
         await page.screenshot(path=str(screenshot_path), full_page=True)
 
-    price_match = re.search(r"\$\s?([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{2})?)", content)
-    if not price_match:
+    if parsed_total is None:
         evidence = VerificationEvidence(
             verified_at=datetime.now(timezone.utc),
             checked_url=checked_url,
@@ -177,7 +200,6 @@ async def _verify_live(
             failure_reason="Live page loaded but price could not be parsed",
         )
 
-    parsed_total = float(price_match.group(1).replace(",", ""))
     material_change = abs(parsed_total - itinerary.estimated_true_total_usd) > itinerary.estimated_true_total_usd * material_change_threshold
     evidence = VerificationEvidence(
         verified_at=datetime.now(timezone.utc),

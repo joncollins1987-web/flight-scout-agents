@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from urllib.parse import urlencode, urlparse
+from urllib.parse import quote_plus, urlencode, urlparse
 
 
 PLACEHOLDER_HOSTS = {"fixtures.local", "example.com", "www.example.com"}
@@ -44,6 +44,21 @@ def build_kayak_search_url(
         }
     )
     return f"https://www.kayak.com{path}?{query}"
+
+
+def build_google_flights_search_url(
+    origin: str,
+    destination: str,
+    depart_date: date,
+    return_date: date,
+    adults: int = 1,
+    cabin: str = "economy",
+) -> str:
+    query = (
+        f"Flights from {origin} to {destination} on {depart_date.isoformat()} "
+        f"through {return_date.isoformat()} for {adults} adult {cabin}"
+    )
+    return f"https://www.google.com/travel/flights?q={quote_plus(query)}"
 
 
 def ensure_actionable_booking_url(
