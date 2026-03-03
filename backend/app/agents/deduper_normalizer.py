@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.booking_links import ensure_actionable_booking_url
 from app.core.pricing import estimate_true_total_from_raw
 from app.schemas.itinerary import FlightSegment, NormalizedItinerary, RawItineraryCandidate
 from app.schemas.request import SearchRequest
@@ -69,7 +70,16 @@ def normalize_and_dedupe(candidates: list[RawItineraryCandidate], request: Searc
                 itinerary_id=_canonical_id(key),
                 source="multi" if len({g.source for g in group}) > 1 else primary.source,
                 source_candidate_ids=[g.candidate_id for g in group],
-                booking_url=primary.booking_url,
+                booking_url=ensure_actionable_booking_url(
+                    primary.booking_url,
+                    origin=primary.origin_airport,
+                    destination=primary.destination_airport,
+                    depart_date=primary.depart_date,
+                    return_date=primary.return_date,
+                    adults=request.passengers_adults,
+                    cabin=request.cabin,
+                    currency=request.currency,
+                ),
                 origin_airport=primary.origin_airport,
                 destination_airport=primary.destination_airport,
                 depart_date=primary.depart_date,

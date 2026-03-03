@@ -37,11 +37,27 @@ function isBookableUrl(url: string | null): boolean {
   }
 }
 
+function fallbackBookingUrl(item: FinalItineraryItem): string {
+  const itinerary = item.itinerary;
+  const origin = itinerary.origin_airport;
+  const destination = itinerary.destination_airport;
+  const depart = itinerary.depart_date;
+  const ret = itinerary.return_date;
+  const params = new URLSearchParams({
+    sort: "bestflight_a",
+    currency: "USD",
+    adults: "1",
+    cabin: "e",
+  });
+  return `https://www.kayak.com/flights/${origin}-${destination}/${depart}/${ret}?${params.toString()}`;
+}
+
 export default function ItineraryCard({ item, tabLabel, mode, selected, onToggleCompare }: Props) {
   const [expanded, setExpanded] = useState(mode === "expanded");
   const itinerary = item.itinerary;
-  const bookingUrl = itinerary.booking_url ?? itinerary.verification_evidence?.checked_url ?? null;
-  const hasBookUrl = isBookableUrl(bookingUrl);
+  const rawBookingUrl = itinerary.booking_url ?? itinerary.verification_evidence?.checked_url ?? null;
+  const bookingUrl = isBookableUrl(rawBookingUrl) ? rawBookingUrl : fallbackBookingUrl(item);
+  const hasBookUrl = Boolean(bookingUrl);
 
   return (
     <article className={`itinerary-card ${mode === "expanded" ? "itinerary-card-emphasis" : "itinerary-card-surface"}`}>

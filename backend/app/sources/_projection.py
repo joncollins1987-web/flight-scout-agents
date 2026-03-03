@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from app.core.booking_links import ensure_actionable_booking_url, is_placeholder_booking_url
 from app.schemas.itinerary import FlightSegment, RawItineraryCandidate
 from app.schemas.request import SearchRequest
 
@@ -38,6 +39,18 @@ def _prefilled_booking_url(
     return_date: date,
     request: SearchRequest,
 ) -> str:
+    if is_placeholder_booking_url(base_url):
+        return ensure_actionable_booking_url(
+            None,
+            origin=origin,
+            destination=destination,
+            depart_date=depart_date,
+            return_date=return_date,
+            adults=request.passengers_adults,
+            cabin=request.cabin,
+            currency=request.currency,
+        )
+
     parsed = urlparse(base_url)
     existing = parse_qs(parsed.query, keep_blank_values=True)
     existing.update(

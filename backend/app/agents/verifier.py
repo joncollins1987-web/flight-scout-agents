@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.artifact_store import ArtifactStore
 from app.core.browser_pool import browser_pool
+from app.core.booking_links import ensure_actionable_booking_url
+from app.core.config import settings
 from app.schemas.itinerary import NormalizedItinerary
 from app.schemas.request import SearchRequest
 from app.schemas.verification import VerificationEvidence, VerifiedItinerary
@@ -60,9 +63,19 @@ def _verify_from_fixture(
 ) -> VerifiedItinerary:
     if fixture_row is None:
         auto_total = round(itinerary.estimated_true_total_usd * 1.01, 2)
+        checked_url = ensure_actionable_booking_url(
+            itinerary.booking_url,
+            origin=itinerary.origin_airport,
+            destination=itinerary.destination_airport,
+            depart_date=itinerary.depart_date,
+            return_date=itinerary.return_date,
+            adults=1,
+            cabin="economy",
+            currency="USD",
+        )
         evidence = VerificationEvidence(
             verified_at=datetime.now(timezone.utc),
-            checked_url=itinerary.booking_url or f"https://fixtures.local/{itinerary.itinerary_id}",
+            checked_url=checked_url,
             price_text_snapshot=f"Total ${auto_total:.2f}",
             fare_brand_text=itinerary.fare_brand,
             baggage_rules_text=itinerary.baggage_rules_summary,
@@ -89,7 +102,16 @@ def _verify_from_fixture(
 
     evidence = VerificationEvidence(
         verified_at=datetime.now(timezone.utc),
-        checked_url=fixture_row.get("checked_url", "https://example.com/checkout"),
+        checked_url=ensure_actionable_booking_url(
+            fixture_row.get("checked_url") or itinerary.booking_url,
+            origin=itinerary.origin_airport,
+            destination=itinerary.destination_airport,
+            depart_date=itinerary.depart_date,
+            return_date=itinerary.return_date,
+            adults=1,
+            cabin="economy",
+            currency="USD",
+        ),
         price_text_snapshot=fixture_row.get("price_text_snapshot", "Total: $0.00"),
         fare_brand_text=fixture_row.get("fare_brand_text"),
         baggage_rules_text=fixture_row.get("baggage_rules_text"),
@@ -118,33 +140,61 @@ async def _verify_live(
     artifact_store: ArtifactStore,
     material_change_threshold: float,
 ) -> VerifiedItinerary:
-    checked_url = f"https://example.com/verify/{itinerary.itinerary_id}"
+    checked_url = ensure_actionable_booking_url(
+        itinerary.booking_url,
+        origin=itinerary.origin_airport,
+        destination=itinerary.destination_airport,
+        depart_date=itinerary.depart_date,
+        return_date=itinerary.return_date,
+        adults=1,
+        cabin="economy",
+        currency="USD",
+    )
     async with browser_pool.page() as page:
-        await page.goto(checked_url, timeout=30_000)
+        await page.goto(checked_url, timeout=settings.playwright_timeout_ms)
         content = await page.content()
         screenshot_path = artifact_store.evidence_path(f"{itinerary.itinerary_id}.png")
         await page.screenshot(path=str(screenshot_path), full_page=True)
 
-    simulated_price = round(itinerary.estimated_true_total_usd * 1.02, 2)
-    material_change = abs(simulated_price - itinerary.estimated_true_total_usd) > itinerary.estimated_true_total_usd * material_change_threshold
+    price_match = re.search(r"\$\s?([0-9]{1,3}(?:,[0-9]{3})*(?:\.\d{2})?)", content)
+    if not price_match:
+        evidence = VerificationEvidence(
+            verified_at=datetime.now(timezone.utc),
+            checked_url=checked_url,
+            price_text_snapshot="No parsable total fare on page",
+            fare_brand_text=itinerary.fare_brand,
+            baggage_rules_text=itinerary.baggage_rules_summary,
+            seat_fee_text=itinerary.seat_cost_summary,
+            change_cancel_text=itinerary.change_cancel_summary,
+            screenshot_path=str(screenshot_path),
+        )
+        return VerifiedItinerary(
+            itinerary_id=itinerary.itinerary_id,
+            source=itinerary.source,
+            status="unverified",
+            verified=False,
+            evidence=evidence,
+            failure_reason="Live page loaded but price could not be parsed",
+        )
 
+    parsed_total = float(price_match.group(1).replace(",", ""))
+    material_change = abs(parsed_total - itinerary.estimated_true_total_usd) > itinerary.estimated_true_total_usd * material_change_threshold
     evidence = VerificationEvidence(
         verified_at=datetime.now(timezone.utc),
         checked_url=checked_url,
-        price_text_snapshot=f"Simulated total ${simulated_price:.2f}",
+        price_text_snapshot=f"Parsed total ${parsed_total:.2f}",
         fare_brand_text=itinerary.fare_brand,
         baggage_rules_text=itinerary.baggage_rules_summary,
         seat_fee_text=itinerary.seat_cost_summary,
         change_cancel_text=itinerary.change_cancel_summary,
         screenshot_path=str(screenshot_path),
     )
-
     return VerifiedItinerary(
         itinerary_id=itinerary.itinerary_id,
         source=itinerary.source,
         status="verified",
         verified=True,
-        verified_total_price_usd=simulated_price,
+        verified_total_price_usd=parsed_total,
         fare_brand=itinerary.fare_brand,
         baggage_rules_summary=itinerary.baggage_rules_summary,
         seat_cost_summary=itinerary.seat_cost_summary,

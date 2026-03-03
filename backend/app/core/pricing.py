@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from urllib.parse import urlparse
-
+from app.core.booking_links import ensure_actionable_booking_url, is_placeholder_booking_url
 from app.schemas.itinerary import NormalizedItinerary, RawItineraryCandidate
 from app.schemas.request import SearchRequest
 from app.schemas.verification import VerifiedItinerary
@@ -29,20 +28,10 @@ def true_total_for_normalized(itinerary: NormalizedItinerary) -> float:
     return itinerary.estimated_true_total_usd
 
 
-def _is_placeholder_url(url: str | None) -> bool:
-    if not url:
-        return True
-    parsed = urlparse(url)
-    host = (parsed.netloc or "").lower()
-    if not host:
-        return True
-    return host in {"fixtures.local", "example.com", "www.example.com"}
-
-
 def _pick_booking_url(itinerary_url: str | None, evidence_url: str | None) -> str | None:
-    if evidence_url and not _is_placeholder_url(evidence_url):
+    if evidence_url and not is_placeholder_booking_url(evidence_url):
         return evidence_url
-    if itinerary_url and not _is_placeholder_url(itinerary_url):
+    if itinerary_url and not is_placeholder_booking_url(itinerary_url):
         return itinerary_url
     # Keep raw itinerary URL as a fallback when no actionable link exists yet.
     return itinerary_url
@@ -53,15 +42,25 @@ def apply_verification_to_normalized(
 ) -> NormalizedItinerary:
     if verified is None:
         return itinerary
+    booking_url = ensure_actionable_booking_url(
+        _pick_booking_url(
+            itinerary_url=itinerary.booking_url,
+            evidence_url=verified.evidence.checked_url if verified.evidence else None,
+        ),
+        origin=itinerary.origin_airport,
+        destination=itinerary.destination_airport,
+        depart_date=itinerary.depart_date,
+        return_date=itinerary.return_date,
+        adults=1,
+        cabin="economy",
+        currency="USD",
+    )
     return itinerary.model_copy(
         update={
             "verified": verified.verified,
             "verified_at": verified.evidence.verified_at if verified.evidence else None,
             "verified_total_price_usd": verified.verified_total_price_usd,
-            "booking_url": _pick_booking_url(
-                itinerary_url=itinerary.booking_url,
-                evidence_url=verified.evidence.checked_url if verified.evidence else None,
-            ),
+            "booking_url": booking_url,
             "fare_brand": verified.fare_brand or itinerary.fare_brand,
             "baggage_rules_summary": verified.baggage_rules_summary or itinerary.baggage_rules_summary,
             "seat_cost_summary": verified.seat_cost_summary or itinerary.seat_cost_summary,
