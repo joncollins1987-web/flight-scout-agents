@@ -393,7 +393,7 @@ class FlightSearchOrchestrator:
         return list(queue.values())
 
     def _result_metadata(self, request: SearchRequest) -> dict[str, str | int | float | bool | None]:
-        data_mode = "live" if (settings.enable_live_sources and not request.dry_run) else "fixtures"
+        data_mode = "live_stub" if (settings.enable_live_sources and not request.dry_run) else "fixtures"
         return {
             "data_mode": data_mode,
             "request_dry_run": request.dry_run,

@@ -88,11 +88,11 @@ export default function ResultsTabs({ result, requestSnapshot }: Props) {
   const isDryRun = requestSnapshot?.dry_run ?? false;
   const modeLabel =
     dataMode === "fixtures" && isDryRun
-      ? "Dry run fixtures"
+        ? "Dry run fixtures"
       : dataMode === "fixtures"
         ? "Fixture-projected results"
-        : dataMode === "live"
-          ? "Live source mode"
+        : dataMode === "live_stub"
+          ? "Live source mode (stubbed)"
           : isDryRun
             ? "Dry run fixtures"
             : "Source mode unknown";
