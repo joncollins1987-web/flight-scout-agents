@@ -15,6 +15,8 @@ def test_api_search_dry_run_shape_and_cache(dry_request_payload: dict) -> None:
     assert parsed_one.cheapest
     assert parsed_one.strategic
     assert any(item.itinerary.verified for item in parsed_one.cheapest)
+    assert parsed_one.metadata.get("data_mode") == "fixtures"
+    assert parsed_one.metadata.get("request_dry_run") is True
 
     second = client.post("/api/search", json=dry_request_payload)
     assert second.status_code == 200

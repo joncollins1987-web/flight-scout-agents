@@ -42,7 +42,7 @@ export default function StepRouteTravelers({ draft, updateDraft }: StepProps) {
           <input
             value={draft.destinationQuery}
             onChange={(event) => updateDraft({ destinationQuery: event.target.value })}
-            placeholder="LAX or Los Angeles"
+            placeholder="TLV or Tel Aviv"
             autoComplete="off"
           />
           <small>Example: `LAX`, `SFO`, `Paris`</small>

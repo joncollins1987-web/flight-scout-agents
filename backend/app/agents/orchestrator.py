@@ -79,6 +79,8 @@ class FlightSearchOrchestrator:
             artifact_store.append_log("planner_output", planner_output.model_dump(mode="json"))
 
             raw_candidates: list[RawItineraryCandidate] = []
+            if not request.dry_run and not settings.enable_live_sources:
+                warnings.append("Live sources are disabled on this deployment; returning fixture-projected results.")
 
             cached_run = get_latest_run_by_hash(
                 request_hash=request_hash,
@@ -186,6 +188,7 @@ class FlightSearchOrchestrator:
                 lambda: self._final_step(
                     run_id=run_id,
                     generated_at=run_started,
+                    request=request,
                     itineraries=reranked.itineraries,
                     stopover_map=stopover_map,
                     cache_hit=cache_hit,
@@ -322,6 +325,7 @@ class FlightSearchOrchestrator:
         self,
         run_id: str,
         generated_at: datetime,
+        request: SearchRequest,
         itineraries: list[NormalizedItinerary],
         stopover_map: dict[str, Any],
         cache_hit: bool,
@@ -349,6 +353,7 @@ class FlightSearchOrchestrator:
             cache_hit=cache_hit,
             cache_expires_at=cache_expires,
             warnings=warnings,
+            metadata_extra=self._result_metadata(request),
         ).model_dump(mode="json")
 
     def _use_live_agents(self, request: SearchRequest | None) -> bool:
@@ -386,6 +391,14 @@ class FlightSearchOrchestrator:
         for itinerary in cheapest + nonstop + strategic:
             queue[itinerary.itinerary_id] = itinerary
         return list(queue.values())
+
+    def _result_metadata(self, request: SearchRequest) -> dict[str, str | int | float | bool | None]:
+        data_mode = "live" if (settings.enable_live_sources and not request.dry_run) else "fixtures"
+        return {
+            "data_mode": data_mode,
+            "request_dry_run": request.dry_run,
+            "live_sources_enabled": settings.enable_live_sources,
+        }
 
 
 orchestrator = FlightSearchOrchestrator()

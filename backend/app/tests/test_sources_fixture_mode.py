@@ -25,3 +25,10 @@ async def test_sources_return_fixture_candidates_in_dry_run() -> None:
     assert two_results
     assert all(item.source == "aggregator_one" for item in one_results)
     assert all(item.source == "aggregator_two" for item in two_results)
+
+    for item in one_results + two_results:
+        assert item.destination_airport == "LAX"
+        assert item.depart_date.isoformat() == "2026-05-10"
+        assert item.return_date.isoformat() == "2026-05-17"
+        assert item.segments_outbound[0].departure_time_utc.date().isoformat() == "2026-05-10"
+        assert item.segments_inbound[0].departure_time_utc.date().isoformat() == "2026-05-17"

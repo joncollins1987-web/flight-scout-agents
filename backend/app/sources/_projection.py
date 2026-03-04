@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from app.core.booking_links import ensure_actionable_booking_url, is_placeholder_booking_url
@@ -28,6 +28,41 @@ def _retarget_segments(
         if index == len(segments) - 1:
             patch["destination_airport"] = new_destination
         updated.append(segment.model_copy(update=patch) if patch else segment)
+    return updated
+
+
+def _parse_utc(iso_value: str | datetime) -> datetime:
+    if isinstance(iso_value, datetime):
+        return iso_value.astimezone(timezone.utc)
+    return datetime.fromisoformat(iso_value.replace("Z", "+00:00")).astimezone(timezone.utc)
+
+
+def _retime_segments(segments: list[FlightSegment], anchor_date: date) -> list[FlightSegment]:
+    if not segments:
+        return []
+
+    anchor_departure = _parse_utc(segments[0].departure_time_utc)
+    updated: list[FlightSegment] = []
+    for segment in segments:
+        dep = _parse_utc(segment.departure_time_utc)
+        arr = _parse_utc(segment.arrival_time_utc)
+        dep_day_offset = (dep.date() - anchor_departure.date()).days
+        arr_day_offset = (arr.date() - anchor_departure.date()).days
+
+        dep_date = anchor_date + timedelta(days=dep_day_offset)
+        arr_date = anchor_date + timedelta(days=arr_day_offset)
+
+        new_dep = datetime.combine(dep_date, dep.timetz()).astimezone(timezone.utc)
+        new_arr = datetime.combine(arr_date, arr.timetz()).astimezone(timezone.utc)
+
+        updated.append(
+            segment.model_copy(
+                update={
+                    "departure_time_utc": new_dep,
+                    "arrival_time_utc": new_arr,
+                }
+            )
+        )
     return updated
 
 
@@ -90,8 +125,14 @@ def project_candidates_to_request(
         depart_date = depart_dates[index % len(depart_dates)]
         return_date = return_dates[index % len(return_dates)]
 
-        outbound = _retarget_segments(candidate.segments_outbound, origin, destination)
-        inbound = _retarget_segments(candidate.segments_inbound, destination, origin)
+        outbound = _retime_segments(
+            _retarget_segments(candidate.segments_outbound, origin, destination),
+            depart_date,
+        )
+        inbound = _retime_segments(
+            _retarget_segments(candidate.segments_inbound, destination, origin),
+            return_date,
+        )
 
         projected.append(
             candidate.model_copy(

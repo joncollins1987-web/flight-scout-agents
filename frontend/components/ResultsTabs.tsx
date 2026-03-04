@@ -28,7 +28,7 @@ const TAB_META: Record<TabId, { label: string; blurb: string }> = {
   },
 };
 
-function snapshotChips(request: SearchRequest | null): string[] {
+function snapshotChips(request: SearchRequest | null, modeLabel: string): string[] {
   if (!request) {
     return [];
   }
@@ -38,7 +38,7 @@ function snapshotChips(request: SearchRequest | null): string[] {
     `${request.passengers_adults} traveler • ${request.cabin.replace("_", " ")}`,
     `${request.carry_on_count} carry-on • ${request.checked_bag_count} checked`,
     request.prefer_nonstop ? "Prefer nonstop" : "Nonstop optional",
-    request.dry_run ? "Dry run fixtures" : "Live source mode",
+    modeLabel,
   ];
 }
 
@@ -84,7 +84,19 @@ export default function ResultsTabs({ result, requestSnapshot }: Props) {
   const left = compareIds[0] ? poolMap.get(compareIds[0]) : undefined;
   const right = compareIds[1] ? poolMap.get(compareIds[1]) : undefined;
 
-  const chips = snapshotChips(requestSnapshot);
+  const dataMode = typeof result.metadata.data_mode === "string" ? result.metadata.data_mode : "";
+  const isDryRun = requestSnapshot?.dry_run ?? false;
+  const modeLabel =
+    dataMode === "fixtures" && isDryRun
+      ? "Dry run fixtures"
+      : dataMode === "fixtures"
+        ? "Fixture-projected results"
+        : dataMode === "live"
+          ? "Live source mode"
+          : isDryRun
+            ? "Dry run fixtures"
+            : "Source mode unknown";
+  const chips = snapshotChips(requestSnapshot, modeLabel);
 
   return (
     <section className="space-y-4 pb-24">

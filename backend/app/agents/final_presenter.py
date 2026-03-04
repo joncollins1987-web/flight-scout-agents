@@ -40,6 +40,7 @@ def present_final(
     cache_hit: bool,
     cache_expires_at: datetime | None,
     warnings: list[str],
+    metadata_extra: dict[str, str | int | float | bool | None] | None = None,
 ) -> FinalPresenterOutput:
     cheapest = _sort_cheapest(itineraries)
     nonstop = _sort_nonstop(itineraries)
@@ -53,6 +54,13 @@ def present_final(
     elif warnings:
         status = "partial"
 
+    metadata: dict[str, str | int | float | bool | None] = {
+        "candidate_count": len(itineraries),
+        "verified_count": sum(1 for i in itineraries if i.verified),
+    }
+    if metadata_extra:
+        metadata.update(metadata_extra)
+
     result = FinalSearchResult(
         run_id=run_id,
         generated_at=generated_at,
@@ -64,9 +72,6 @@ def present_final(
         nonstop=[_as_item(i, stopover_plans.get(i.itinerary_id)) for i in nonstop],
         strategic=[_as_item(i, stopover_plans.get(i.itinerary_id)) for i in strategic],
         compare_pool=strategic[:10],
-        metadata={
-            "candidate_count": len(itineraries),
-            "verified_count": sum(1 for i in itineraries if i.verified),
-        },
+        metadata=metadata,
     )
     return FinalPresenterOutput(result=result)
